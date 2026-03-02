@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fridge Chef - Cook Something Incredible</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: #111008;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #ff6b35;
+      border-radius: 2px;
+    }
+    
+    @keyframes tagPop {
+      from { opacity: 0; transform: scale(0.7); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes recipeIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @keyframes shimmerPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    .hero-img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(0.55) saturate(1.3);
+      transition: opacity 0.8s ease;
+      border-radius: 0 0 24px 24px;
+    }
+    
+    .ing-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f0ece5;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      flex: 1;
+      min-width: 120px;
+      padding: 6px 4px;
+    }
+    
+    .ing-input::placeholder {
+      color: #555;
+    }
+    
+    .mood-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f0ece5;
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      width: 100%;
+      resize: none;
+      line-height: 1.6;
+    }
+    
+    .mood-input::placeholder {
+      color: #555;
+    }
+    
+    .primary-btn {
+      background: #ff6b35;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 16px 32px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .primary-btn:hover:not(:disabled) {
+      background: #ff8554;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+    }
+    
+    .primary-btn:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    .recipe-card {
+      background: #1c1814;
+      border: 1px solid #2e2520;
+      border-radius: 20px;
+      overflow: hidden;
+      animation: recipeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      margin-bottom: 20px;
+    }
+    
+    .recipe-card:nth-child(2) { animation-delay: 0.1s; }
+    .recipe-card:nth-child(3) { animation-delay: 0.2s; }
+    
+    .step-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #ff6b35;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+      font-family: 'Nunito', sans-serif;
+    }
+    
+    .magic-tweak {
+      background: linear-gradient(135deg, #ff6b3522, #f7c59f11);
+      border: 1px solid #ff6b3544;
+      border-left: 3px solid #ff6b35;
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      margin-top: 16px;
+    }
+    
+    .section-label {
+      font-family: 'Nunito', sans-serif;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #ff6b35;
+      margin-bottom: 12px;
+    }
+    
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      background: #252018;
+      border: 1px solid #3a3020;
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #a09070;
+      gap: 4px;
+    }
+    
+    .food-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin: 20px 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .food-gallery img {
+      width: 100%;
+      height: 80px;
+      object-fit: cover;
+      filter: brightness(0.7) saturate(1.3);
+      transition: filter 0.3s;
+    }
+    
+    .food-gallery img:hover {
+      filter: brightness(0.9) saturate(1.5);
+    }
+    
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      gap: 20px;
+    }
+    
+    .loader-ring {
+      width: 56px;
+      height: 56px;
+      border: 3px solid #2a2018;
+      border-top: 3px solid #ff6b35;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    
+    @media (max-width: 480px) {
+      .hero-img { height: 200px; }
+      .recipe-card { margin-bottom: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    // Food category images from Unsplash
+    const FOOD_IMAGES = [
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80',
+      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
+      'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80',
+      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80',
+      'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&q=80',
+      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80',
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
+      'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=800&q=80',
+    ];
+    
+    const MOOD_MAP = {
+      comfort: { label: 'Comfort Mode', emoji: '🫂', palette: ['#ff6b35', '#f7c59f'], hint: 'Warm, hearty & soul-hugging' },
+      energized: { label: 'High Energy', emoji: '⚡', palette: ['#f72585', '#7209b7'], hint: 'Bold, fast & firing on all cylinders' },
+      healthy: { label: 'Clean & Light', emoji: '🥗', palette: ['#52b788', '#d8f3dc'], hint: 'Fresh, nourishing & feel-good' },
+      fancy: { label: 'Impress Mode', emoji: '✨', palette: ['#c9a84c', '#fff3b0'], hint: 'Elevated flavors, restaurant vibes' },
+      lazy: { label: 'Lazy Chef', emoji: '🛋️', palette: ['#6b6b6b', '#c0c0c0'], hint: '5 ingredients, 15 minutes, zero stress' },
+      spicy: { label: 'Spice Seeker', emoji: '🔥', palette: ['#e63946', '#f4a261'], hint: 'Turn up the heat, bold & punchy' },
+      sweet: { label: 'Sweet Tooth', emoji: '🍰', palette: ['#e07a5f', '#f2cc8f'], hint: 'Dessert-ish, indulgent, treat yourself' },
+      adventurous: { label: 'Adventurous', emoji: '🌍', palette: ['#264653', '#2a9d8f'], hint: 'Global flavors, try something new' },
+    };
+    
+    function classifyMood(text) {
+      const t = text.toLowerCase();
+      if (/comfort|cozy|warm|hug|sad|tired|home|soup|stew|heavy|slow/.test(t)) return 'comfort';
+      if (/energy|workout|gym|fast|quick|power|fuel|strong|sport/.test(t)) return 'energized';
+      if (/health|light|clean|diet|fresh|salad|lean|fit|veggie|green/.test(t)) return 'healthy';
+      if (/fancy|impress|date|special|elegant|gourmet|chef|restaurant/.test(t)) return 'fancy';
+      if (/lazy|easy|simple|quick|tired|no effort|chill|minimal|bare/.test(t)) return 'lazy';
+      if (/spicy|hot|fire|kick|bold|heat|chili|pepper|burn/.test(t)) return 'spicy';
+      if (/sweet|dessert|sugar|treat|cake|chocolate|indulge|bake/.test(t)) return 'sweet';
+      if (/adventur|exotic|world|global|international|different|new|cuisine/.test(t)) return 'adventurous';
+      if (t.length < 10) return 'lazy';
+      return 'comfort';
+    }
+    
+    function generateRecipes(ingredients, moodText, moodKey) {
+      const moodLabel = MOOD_MAP[moodKey]?.label || 'Comfort Mode';
+      const mainIngredients = ingredients.slice(0, 4);
+      
+      const recipeTemplates = [
+        {
+          title: `${mainIngredients[0]?.charAt(0).toUpperCase() + mainIngredients[0]?.slice(1)} ${moodKey === 'spicy' ? 'Spice' : 'Delight'}`,
+          tagline: `A ${moodLabel.toLowerCase()} masterpiece with ${mainIngredients.join(', ')}`,
+          time: moodKey === 'lazy' ? '15 min' : moodKey === 'energized' ? '20 min' : '30 min',
+          difficulty: moodKey === 'fancy' ? 'Medium' : moodKey === 'lazy' ? 'Easy' : 'Easy',
+          servings: '2',
+          calories: '~350 per serving',
+          mood_match: `Perfect for ${moodLabel} - ${moodText}`,
+          magic_tweak: `Add a squeeze of fresh lemon and a pinch of sea salt to elevate all flavors`,
+          ingredients: [
+            ...mainIngredients.map(ing => `200g ${ing}`),
+            '2 tbsp olive oil',
+            '3 cloves garlic, minced',
+            'Salt & pepper to taste',
+          ],
+          steps: [
+            `Prep all ingredients: wash and chop ${mainIngredients.join(', ')}.`,
+            'Heat olive oil in a pan over medium heat, add garlic and sauté for 1 minute.',
+            `Add ${mainIngredients[0]} and cook for 3-4 minutes until golden.`,
+            `Toss in remaining ingredients and cook for ${moodKey === 'lazy' ? '5' : '10'} minutes.`,
+            'Season with salt, pepper, and serve hot.',
+          ],
+          tip: 'Prep all ingredients before you start cooking - it makes everything smoother!',
+          vibe_emoji: moodKey === 'spicy' ? '🌶️' : moodKey === 'sweet' ? '🍯' : moodKey === 'healthy' ? '🥗' : '🍳',
+        },
+        {
+          title: `${moodKey === 'adventurous' ? 'Global' : 'One-Pan'} ${mainIngredients[1]?.charAt(0).toUpperCase() + mainIngredients[1]?.slice(1) || 'Fusion'} Bowl`,
+          tagline: moodKey === 'healthy' ? 'Nutritious, delicious, and guilt-free' : 'Big flavors, minimal cleanup',
+          time: moodKey === 'lazy' ? '12 min' : '25 min',
+          difficulty: 'Easy',
+          servings: '2',
+          calories: '~420 per serving',
+          mood_match: `Designed for ${moodLabel} vibes`,
+          magic_tweak: moodKey === 'spicy' ? 'Add a dash of hot sauce at the end' : 'Finish with fresh herbs for brightness',
+          ingredients: [
+            ...mainIngredients.slice(0, 3).map(ing => `150g ${ing}`),
+            '1 onion, diced',
+            '1 bell pepper, sliced',
+            '2 tbsp soy sauce',
+            '1 tsp paprika',
+            'Fresh cilantro or parsley',
+          ],
+          steps: [
+            'Heat a large skillet over medium-high heat.',
+            `Sauté onion and ${mainIngredients[0]} for 4-5 minutes.`,
+            'Add bell pepper and remaining ingredients.',
+            'Pour in soy sauce and paprika, stir well.',
+            'Cook for 8-10 minutes until everything is tender.',
+            'Garnish with fresh herbs and serve.',
+          ],
+          tip: 'Cut ingredients into similar sizes for even cooking.',
+          vibe_emoji: moodKey === 'comfort' ? '🥘' : moodKey === 'energized' ? '⚡' : '🥣',
+        },
+        {
+          title: `${moodKey === 'fancy' ? 'Gourmet' : 'Quick'} ${mainIngredients[2]?.charAt(0).toUpperCase() + mainIngredients[2]?.slice(1) || 'Special'} ${moodKey === 'sweet' ? 'Treat' : 'Skillet'}`,
+          tagline: moodKey === 'lazy' ? 'Maximum flavor, minimum effort' : 'Restaurant quality at home',
+          time: moodKey === 'lazy' ? '10 min' : moodKey === 'fancy' ? '35 min' : '20 min',
+          difficulty: moodKey === 'fancy' ? 'Medium' : 'Easy',
+          servings: '2',
+          calories: '~380 per serving',
+          mood_match: `Tailored for your ${moodLabel} mood`,
+          magic_tweak: 'Toast your spices in the pan first for extra depth',
+          ingredients: [
+            ...mainIngredients.map(ing => `100g ${ing}`),
+            '2 tbsp butter or oil',
+            '1 tsp cumin',
+            '1/2 tsp chili flakes',
+            'Juice of 1/2 lemon',
+            'Grated cheese (optional)',
+          ],
+          steps: [
+            'Melt butter in a skillet over medium heat.',
+            'Add cumin and chili flakes, toast for 30 seconds.',
+            `Add ${mainIngredients.join(', ')} to the pan.`,
+            'Sauté for 10-12 minutes, stirring occasionally.',
+            'Squeeze lemon juice over the top.',
+            'Top with grated cheese if desired and serve.',
+          ],
+          tip: 'Let ingredients sit undisturbed for 1-2 minutes to develop a nice sear.',
+          vibe_emoji: moodKey === 'fancy' ? '✨' : moodKey === 'spicy' ? '🔥' : '🍽️',
+        },
+      ];
+      
+      return { recipes: recipeTemplates };
+    }
+    
+    // ---- STEP INDICATOR ----
+    function StepDot({ n, active, done, label }) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: done ? '#ff6b35' : active ? '#fff' : 'transparent',
+            border: done ? '2px solid #ff6b35' : active ? '2px solid #fff' : '2px solid #444',
+            color: done ? '#fff' : active ? '#1a1410' : '#555',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 13, fontWeight: 700,
+            transition: 'all 0.4s',
+            fontFamily: "'Nunito', sans-serif",
+          }}>
+            {done ? '✓' : n}
+          </div>
+          <span style={{ 
+            fontSize: 9, 
+            letterSpacing: '0.1em', 
+            textTransform: 'uppercase', 
+            color: active ? '#ff6b35' : '#555',
+            fontFamily: "'Nunito', sans-serif" 
+          }}>{label}</span>
+        </div>
+      );
+    }
+    
+    // ---- INGREDIENT TAG ----
+    function IngTag({ text, onRemove }) {
+      return (
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'rgba(255,107,53,0.12)',
+          border: '1px solid rgba(255,107,53,0.35)',
+          borderRadius: 40,
+          padding: '6px 14px 6px 16px',
+          fontFamily: "'Nunito', sans-serif",
+          fontSize: 14, fontWeight: 600,
+          color: '#ff6b35',
+          animation: 'tagPop 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+        }}>
+          {text}
+          <button onClick={onRemove} style={{
+            background: 'rgba(255,107,53,0.2)', border: 'none', borderRadius: '50%',
+            width: 18, height: 18, cursor: 'pointer', color: '#ff6b35',
+            fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 0, lineHeight: 1, fontWeight: 900,
+          }}>×</button>
+        </div>
+      );
+    }
+    
+    // ---- FOOD MOOD BAR ----
+    function MoodBar({ mood }) {
+      const m = MOOD_MAP[mood];
+      if (!m) return null;
+      return (
+        <div style={{
+          background: `linear-gradient(135deg, ${m.palette[0]}22, ${m.palette[1]}22)`,
+          border: `1px solid ${m.palette[0]}44`,
+          borderRadius: 12,
+          padding: '16px 20px',
+          display: 'flex', alignItems: 'center', gap: 14,
+          marginBottom: 20,
+          animation: 'fadeSlide 0.5s ease',
+        }}>
+          <span style={{ fontSize: 32 }}>{m.emoji}</span>
+          <div>
+            <div style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: m.palette[0] }}>{m.label}</div>
+            <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: '#aaa', marginTop: 2 }}>{m.hint}</div>
+          </div>
+        </div>
+      );
+    }
+    
+    // ---- RECIPE CARD ----
+    function RecipeCard({ r, idx }) {
+      const [expanded, setExpanded] = useState(idx === 0);
+      const imgSrc = FOOD_IMAGES[(idx * 2 + 3) % FOOD_IMAGES.length];
+      
+      return (
+        <div className="recipe-card" style={{ animationDelay: `${idx * 0.12}s` }}>
+          <div style={{ position: 'relative', height: 160 }}>
+            <img src={imgSrc} alt={r.title} style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              filter: 'brightness(0.65) saturate(1.2)',
+            }} />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to bottom, transparent 30%, #1c1814 100%)',
+            }} />
+            <div style={{ position: 'absolute', top: 12, left: 14, display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span style={{
+                background: '#ff6b35', color: '#fff', borderRadius: 20,
+                padding: '3px 10px', fontSize: 10, fontWeight: 800,
+                fontFamily: "'Nunito', sans-serif", letterSpacing: '0.06em',
+              }}>#{idx + 1}</span>
+            </div>
+            <div style={{ position: 'absolute', bottom: 14, left: 16, right: 16 }}>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 900, color: '#fff', lineHeight: 1.15 }}>
+                {r.vibe_emoji} {r.title}
+              </div>
+              <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: '#c0a880', fontStyle: 'italic', marginTop: 4 }}>
+                {r.tagline}
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ padding: '14px 16px', display: 'flex', gap: 6, flexWrap: 'wrap', borderBottom: '1px solid #2a2018' }}>
+            <span className="tag-pill">⏱ {r.time}</span>
+            <span className="tag-pill">⚡ {r.difficulty}</span>
+            <span className="tag-pill">🍽 {r.servings} servings</span>
+            <span className="tag-pill">🔥 {r.calories}</span>
+          </div>
+          
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #2a2018' }}>
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 11, color: '#ff6b35', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Mood match{' '}
+            </span>
+            <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: '#7a6a58' }}>{r.mood_match}</span>
+          </div>
+          
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              width: '100%', padding: '14px 16px',
+              background: 'none', border: 'none',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              cursor: 'pointer', color: '#f0ece5',
+              fontFamily: "'Nunito', sans-serif", fontSize: 13, fontWeight: 700,
+              transition: 'background 0.2s',
+              borderBottom: expanded ? '1px solid #2a2018' : 'none',
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#25201a'}
+            onMouseOut={(e) => e.currentTarget.style.background = 'none'}
+          >
+            <span>{expanded ? 'Hide recipe' : 'See full recipe'}</span>
+            <span style={{ color: '#ff6b35', fontSize: 18, transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>⌄</span>
+          </button>
+          
+          {expanded && (
+            <div style={{ padding: '0 16px 20px', animation: 'fadeSlide 0.3s ease' }}>
+              <div style={{ marginTop: 16, marginBottom: 20 }}>
+                <div className="section-label">Ingredients</div>
+                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {r.ingredients?.map((ing, i) => (
+                    <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                      <span style={{ color: '#ff6b35', fontSize: 16 }}>—</span>
+                      <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 14, color: '#c0a880', fontWeight: 400 }}>{ing}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {r.magic_tweak && r.magic_tweak !== 'null' && (
+                <div className="magic-tweak">
+                  <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#ff6b35', marginBottom: 4 }}>
+                    ✨ Magic Tweak
+                  </div>
+                  <div style={{ fontFamily: "'Nunito', sans-serif", fontSize: 13, color: '#c0a880' }}>{r.magic_tweak}</div>
+                </div>
+              )}
+              
+              <div style={{ marginTop: 20, marginBottom: 16 }}>
+                <div className="section-label">Method</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {r.steps?.map((step, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                      <div className="step-dot">{i + 1}</div>
+                      <p style={{ fontFamily: "'Nunito', sans-serif", fontSize: 13, color: '#c0a880', lineHeight: 1.7, paddingTop: 3, margin: 0 }}>{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {r.tip && (
+                <div style={{ background: '#252018', border: '1px solid #3a3020', borderRadius: 10, padding: '12px 14px' }}>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#c9a84c' }}>
+                    👨‍🍳 Chef's Tip{' '}
+                  </span>
+                  <span style={{ fontFamily: "'Nunito', sans-serif", fontSize: 12, color: '#7a6a58' }}>{r.tip}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // ---- MAIN APP ----
+    function App() {
+      const [step, setStep] = useState(1);
+      const [ingredients, setIngredients] = useState([]);
+      const [inputVal, setInputVal] = useState('');
+      const [moodText, setMoodText] = useState('');
+      const [moodKey, setMoodKey] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [recipe, setRecipe] = useState(null);
+      const [error, setError] = useState(null);
+      const [heroImg, setHeroImg] = useState(FOOD_IMAGES[0]);
+      const inputRef = useRef(null);
+      
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setHeroImg(FOOD_IMAGES[Math.floor(Math.random() * FOOD_IMAGES.length)]);
+        }, 4000);
+        return () => clearInterval(interval);
+      }, []);
+      
+      const addIngredient = (val) => {
+        const cleaned = val.trim().toLowerCase().replace(/,/g, '');
+        if (!cleaned) return;
+        const parts = val.split(',').map(p => p.trim()).filter(Boolean);
+        const newOnes = parts.filter(p => !ingredients.includes(p.toLowerCase()) && p.length > 1);
+        setIngredients(prev => [...prev, ...newOnes.map(p => p.toLowerCase())]);
+        setInputVal('');
+      };
+      
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ',') {
+          e.preventDefault();
+          addIngredient(inputVal);
+        }
+        if (e.key === 'Backspace' && inputVal === '' && ingredients.length > 0) {
+          setIngredients(prev => prev.slice(0, -1));
+        }
+      };
+      
+      const submitIngredients = () => {
+        if (inputVal.trim()) addIngredient(inputVal);
+        if (ingredients.length < 4) return;
+        setStep(2);
+        setTimeout(() => document.getElementById('mood-input')?.focus(), 300);
+      };
+      
+      const submitMood = () => {
+        if (!moodText.trim()) return;
+        const key = classifyMood(moodText);
+        setMoodKey(key);
+        generateRecipe(key);
+      };
+      
+      const generateRecipe = async (mk) => {
+        setLoading(true);
+        setStep(3);
+        setError(null);
+        setRecipe(null);
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        try {
+          const recipes = generateRecipes(ingredients, moodText, mk);
+          setRecipe(recipes);
+        } catch (e) {
+          setError("Kitchen's on fire 🔥 — try again!");
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      const reset = () => {
+        setStep(1);
+        setIngredients([]);
+        setInputVal('');
+        setMoodText('');
+        setMoodKey(null);
+        setRecipe(null);
+        setError(null);
+      };
+      
+      return (
+        <div style={{ minHeight: '100vh', background: '#111008', color: '#f0ece5', fontFamily: "'Nunito', sans-serif" }}>
+          {/* HERO */}
+          <div style={{ position: 'relative', marginBottom: 0 }}>
+            <img src={heroImg} alt="food" className="hero-img" key={heroImg} />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to bottom, #11100800 30%, #111008 100%)',
+              borderRadius: '0 0 24px 24px',
+            }} />
+            <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
+              <div style={{
+                fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: '#ff6b35', fontWeight: 800, marginBottom: 6,
+              }}>🍳 Fridge Chef</div>
+              <h1 style={{
+                fontFamily: "'Fraunces', serif",
+                fontSize: 'clamp(30px, 8vw, 44px)',
+                fontWeight: 900, lineHeight: 1.1, color: '#fff',
+              }}>
+                Cook something <span style={{ fontStyle: 'italic', color: '#ff6b35' }}>incredible</span>
+                <br />from what you have.
+              </h1>
+            </div>
+          </div>
+          
+          {/* STEP INDICATOR */}
+          <div style={{ maxWidth: 520, margin: '0 auto', padding: '24px 24px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 32 }}>
+              <StepDot n={1} active={step === 1} done={step > 1} label="Ingredients" />
+              <div style={{ flex: 1, height: 1, background: step > 1 ? '#ff6b35' : '#2a2018', transition: 'background 0.5s', margin: '0 6px', marginBottom: 20 }} />
+              <StepDot n={2} active={step === 2} done={step > 2} label="Mood" />
+              <div style={{ flex: 1, height: 1, background: step > 2 ? '#ff6b35' : '#2a2018', transition: 'background 0.5s', margin: '0 6px', marginBottom: 20 }} />
+              <StepDot n={3} active={step === 3} done={false} label="Recipe" />
+            </div>
+            
+            {/* STEP 1: INGREDIENTS */}
+            {step === 1 && (
+              <div style={{ animation: 'fadeSlide 0.4s ease' }}>
+                <div style={{ marginBottom: 8 }}>
+                  <div className="section-label">What's in your fridge?</div>
+                  <p style={{ fontSize: 13, color: '#7a6a58', lineHeight: 1.6, marginBottom: 20 }}>
+                    Type ingredients and press <kbd style={{ background: '#2a2018', padding: '1px 6px', borderRadius: 4, fontSize: 11 }}>Enter</kbd> or <kbd style={{ background: '#2a2018', padding: '1px 6px', borderRadius: 4, fontSize: 11 }}>,</kbd> to add each one. You need at least 4.
+                  </p>
+                </div>
+                
+                <div style={{
+                  background: '#1a1612', border: '1px solid #2e2520', borderRadius: 16,
+                  padding: '14px 16px', display: 'flex', flexWrap: 'wrap', gap: 8,
+                  cursor: 'text', minHeight: 120, alignContent: 'flex-start', transition: 'border-color 0.2s',
+                }} onClick={() => inputRef.current?.focus()}>
+                  {ingredients.map((ing, i) => (
+                    <IngTag key={i} text={ing} onRemove={() => setIngredients(prev => prev.filter((_, j) => j !== i))} />
+                  ))}
+                  <input
+                    ref={inputRef}
+                    className="ing-input"
+                    placeholder={ingredients.length === 0 ? 'e.g. eggs, pasta, garlic, cheese...' : 'add more...'}
+                    value={inputVal}
+                    onChange={e => setInputVal(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                  />
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, marginBottom: 28 }}>
+                  <span style={{ fontSize: 12, color: ingredients.length >= 4 ? '#52b788' : '#666' }}>
+                    {ingredients.length >= 4 ? `✓ ${ingredients.length} ingredients ready` : `${ingredients.length}/4 minimum`}
+                  </span>
+                  {inputVal && (
+                    <button onClick={() => addIngredient(inputVal)} style={{
+                      background: 'none', border: 'none', color: '#ff6b35', fontSize: 12,
+                      cursor: 'pointer', fontFamily: "'Nunito', sans-serif", fontWeight: 700,
+                    }}>+ Add "{inputVal}"</button>
+                  )}
+                </div>
+                
+                {ingredients.length === 0 && (
+                  <div style={{ marginBottom: 28 }}>
+                    <div style={{ fontSize: 10, color: '#444', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 8 }}>
+                      Meal inspiration
+                    </div>
+                    <div className="food-gallery">
+                      {FOOD_IMAGES.slice(0, 6).map((src, i) => (
+                        <img key={i} src={src} alt="food" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <button className="primary-btn" disabled={ingredients.length < 4} onClick={submitIngredients}>
+                  {ingredients.length < 4
+                    ? `Add ${4 - ingredients.length} more ingredient${4 - ingredients.length === 1 ? '' : 's'}`
+                    : 'Find My Recipes →'}
+                </button>
+              </div>
+            )}
+            
+            {/* STEP 2: MOOD */}
+            {step === 2 && (
+              <div style={{ animation: 'fadeSlide 0.4s ease' }}>
+                <div className="section-label">What's your vibe right now?</div>
+                <p style={{ fontSize: 13, color: '#7a6a58', lineHeight: 1.6, marginBottom: 20 }}>
+                  Tell us how you're feeling, what you're craving, or what the occasion is. Be as free as you like — we'll figure out the rest.
+                </p>
+                
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
+                  {ingredients.map((ing, i) => (
+                    <span key={i} className="tag-pill">🧂 {ing}</span>
+                  ))}
+                </div>
+                
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                  {["I'm exhausted", 'Wanna impress', 'Feeling healthy', 'Super hungry', 'Date night', 'Quick snack'].map(eg => (
+                    <button key={eg} onClick={() => setMoodText(eg)} style={{
+                      background: moodText === eg ? '#ff6b3522' : '#1a1612',
+                      border: `1px solid ${moodText === eg ? '#ff6b35' : '#2e2520'}`,
+                      borderRadius: 20, padding: '6px 14px',
+                      color: moodText === eg ? '#ff6b35' : '#666',
+                      fontFamily: "'Nunito', sans-serif", fontSize: 12, fontWeight: 700,
+                      cursor: 'pointer', transition: 'all 0.2s',
+                    }}>{eg}</button>
+                  ))}
+                </div>
+                
+                <div style={{ background: '#1a1612', border: '1px solid #2e2520', borderRadius: 16, padding: '16px', marginBottom: 16 }}>
+                  <textarea
+                    id="mood-input"
+                    className="mood-input"
+                    rows={3}
+                    placeholder="e.g. 'tired after gym but want something healthy and filling' or 'date night, wanna impress' or 'just spicy and fast'..."
+                    value={moodText}
+                    onChange={e => setMoodText(e.target.value)}
+                  />
+                </div>
+                
+                {moodText.trim().length > 3 && <MoodBar mood={classifyMood(moodText)} />}
+                
+                <button className="primary-btn" disabled={!moodText.trim()} onClick={submitMood}>
+                  Cook For Me 🔥
+                </button>
+                
+                <button onClick={() => setStep(1)} style={{
+                  background: 'none', border: 'none', color: '#555',
+                  fontFamily: "'Nunito', sans-serif", fontSize: 12, cursor: 'pointer',
+                  width: '100%', textAlign: 'center', marginTop: 14, padding: 8,
+                }}>← Back to ingredients</button>
+              </div>
+            )}
+            
+            {/* STEP 3: RECIPES */}
+            {step === 3 && (
+              <div style={{ paddingBottom: 80 }}>
+                {loading && (
+                  <div className="loader">
+                    <div className="loader-ring" />
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{
+                        fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700,
+                        color: '#ff6b35', animation: 'shimmerPulse 1.8s ease infinite',
+                      }}>Cooking up your recipes...</div>
+                      <div style={{ fontSize: 12, color: '#555', marginTop: 8 }}>Crafting 3 dishes just for you</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[0.1, 0.3, 0.5].map((d, i) => (
+                        <span key={i} style={{ fontSize: 24, animation: `float 1.4s ${d}s ease-in-out infinite` }}>
+                          {['🥚', '🧄', '🍳'][i]}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {error && (
+                  <div style={{ textAlign: 'center', padding: 40 }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>🔥</div>
+                    <div style={{ color: '#ff6b35', fontFamily: "'Fraunces', serif", fontSize: 20 }}>{error}</div>
+                    <button className="primary-btn" style={{ marginTop: 20 }} onClick={() => moodKey && generateRecipe(moodKey)}>Retry</button>
+                  </div>
+                )}
+                
+                {recipe && !loading && (
+                  <div style={{ animation: 'fadeSlide 0.4s ease' }}>
+                    {moodKey && <MoodBar mood={moodKey} />}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 24 }}>
+                      {ingredients.map((ing, i) => (
+                        <span key={i} className="tag-pill">🧂 {ing}</span>
+                      ))}
+                    </div>
+                    
+                    <div className="section-label" style={{ fontSize: 13, marginBottom: 20 }}>
+                      {recipe.recipes?.length || 0} recipes crafted for you
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: 6, overflowX: 'auto', marginBottom: 24, borderRadius: 12 }}>
+                      {FOOD_IMAGES.slice(0, 4).map((src, i) => (
+                        <img key={i} src={src} alt="food inspiration" style={{
+                          height: 100, width: 130, objectFit: 'cover',
+                          filter: 'brightness(0.75) saturate(1.3)',
+                          flex: '0 0 auto', borderRadius: 8,
+                        }} />
+                      ))}
+                    </div>
+                    
+                    {recipe.recipes?.map((r, i) => (
+                      <RecipeCard key={i} r={r} idx={i} />
+                    ))}
+                    
+                    <button onClick={reset} style={{
+                      background: 'none', border: '1px solid #2e2520', borderRadius: 14,
+                      color: '#666', fontFamily: "'Nunito', sans-serif", fontSize: 13,
+                      fontWeight: 700, padding: '14px', cursor: 'pointer', width: '100%',
+                      marginTop: 8, transition: 'all 0.2s',
+                    }}
+                      onMouseOver={e => { e.currentTarget.style.borderColor = '#ff6b35'; e.currentTarget.style.color = '#ff6b35'; }}
+                      onMouseOut={e => { e.currentTarget.style.borderColor = '#2e2520'; e.currentTarget.style.color = '#666'; }}
+                    >← Start over with new ingredients</button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
